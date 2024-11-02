@@ -1,30 +1,34 @@
 import { Component, inject } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { RouterModule } from '@angular/router';
 import Swal from 'sweetalert2';
+
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterModule, RouterLink],
+  imports: [RouterModule], // Agrega RouterModule aquí
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+  styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent {
-  esAdmin:boolean = false;
-  auth = inject(AuthService)
-  
-  resultadoInput: string = " ";
+  auth = inject(AuthService);
+  router = inject(Router);
 
-  async abrirModal(){
+  async abrirModal() {
     const confirmacion = await Swal.fire({
-      title: '¿Desea Cerrar Sesion?',
-      text: 'Esta acción cerrara la ventana actual.',
+      title: '¿Desea cerrar sesión?',
+      text: 'Esta acción cerrará la sesión actual.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sí, cerrar',
       cancelButtonText: 'Cancelar'
     });
+
     if (confirmacion.isConfirmed) {
-      Swal.fire('Cochera Eliminada', 'La cochera ha sido eliminada de la plataforma.', 'success');
-}}};
+      this.auth.logout(); // Llama al logout para eliminar el token
+      this.router.navigate(['/login']); // Redirige al login
+      Swal.fire('Sesión cerrada', 'Has cerrado sesión correctamente.', 'success');
+    }
+  }
+}

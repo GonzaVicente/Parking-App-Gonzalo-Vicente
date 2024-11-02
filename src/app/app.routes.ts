@@ -3,33 +3,32 @@ import { LoginComponent } from './pages/login/login.component';
 import { EstadoCocherasComponent } from './pages/estado-cocheras/estado-cocheras.component';
 import { ReporteComponent } from './pages/reporte/reporte.component';
 import { PreciosComponent } from './pages/precios/precios.component';
-import { UsuarioComponent } from './pages/usuario/usuario.component';
+import { AuthGuard } from './auth.guard';
 
 export const routes: Routes = [
     {
         path: "login",
-        component: LoginComponent
+        component: LoginComponent,
+        canActivate: [AuthGuard] // Permite el acceso solo si no está logueado
     },
     {
         path: "estado-cocheras",
-        component: EstadoCocherasComponent
+        component: EstadoCocherasComponent,
+        canActivate: [AuthGuard] // Protege la ruta
     },
     {
         path: "reportes",
-        component: ReporteComponent
+        component: ReporteComponent,
+        canActivate: [AuthGuard] // Protege la ruta
     },
     {
         path: "precios",
-        component: PreciosComponent
-    },
-    {
-        path: "usuario",
-        component: UsuarioComponent
+        component: PreciosComponent,
+        canActivate: [AuthGuard] // Protege la ruta
     },
     {
         path: "",
         redirectTo: "login",
         pathMatch: "full"
     },
-    
 ];

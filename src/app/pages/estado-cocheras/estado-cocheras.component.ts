@@ -4,10 +4,10 @@ import { Cochera } from '../../interfaces/cochera';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from '../../components/header/header.component';
 import { AuthService } from '../../services/auth.service';
-import { Estacionamiento } from '../../interfaces/estacionamiento';
 import Swal from 'sweetalert2';
-import { EstacionamientosService } from '../../services/estacionamientos.service';
 import { CocherasService } from '../../services/cocheras.service';
+import { Estacionamiento } from '../../interfaces/estacionamiento';
+import { EstacionamientosService } from '../../services/estacionamientos.service';
 
 @Component({
   selector: 'app-estado-cocheras',
@@ -32,6 +32,12 @@ export class EstadoCocherasComponent {
   auth = inject(AuthService);
   cocheras = inject(CocherasService);
   estacionamientos = inject(EstacionamientosService);
+
+  tarifas: { mediaHora: number, primeraHora: number, horaAdicional: number } = {
+    mediaHora: 130,
+    primeraHora: 130,
+    horaAdicional: 80,
+  };
 
   ngOnInit() {
     this.reload().catch(error => {
@@ -143,17 +149,14 @@ export class EstadoCocherasComponent {
         const horaDeshabilitacion = nuevoEstado === 1 ? new Date().toISOString() : null;
 
         if (nuevoEstado === 1) {
-          // Almacena la hora de deshabilitación en localStorage solo si no es null
-          const horaDeshabilitacionStr = horaDeshabilitacion ?? ""; 
-          localStorage.setItem(`cochera_${cocheraId}_horaDeshabilitacion`, horaDeshabilitacionStr);
+          localStorage.setItem(`cochera_${cocheraId}_horaDeshabilitacion`, horaDeshabilitacion ?? "");
         } else {
-          // Remueve la hora de deshabilitación si está habilitada nuevamente
           localStorage.removeItem(`cochera_${cocheraId}_horaDeshabilitacion`);
         }
 
-        this.filas = this.filas.map(fila => 
-          fila.id === cocheraId 
-            ? { ...fila, deshabilitada: nuevoEstado, horaDeshabilitacion, activo: nuevoEstado ? null : fila.activo } 
+        this.filas = this.filas.map(fila =>
+          fila.id === cocheraId
+            ? { ...fila, deshabilitada: nuevoEstado, horaDeshabilitacion, activo: nuevoEstado ? null : fila.activo }
             : fila
         );
 
@@ -184,38 +187,72 @@ export class EstadoCocherasComponent {
         localStorage.setItem(`cochera_${idCochera}_patente`, patente);
         localStorage.setItem(`cochera_${idCochera}_horaIngreso`, horaIngreso);
 
-        this.filas = this.filas.map(fila => 
-          fila.id === idCochera 
-            ? { ...fila, activo: { id: -1, patente, horaIngreso } as Estacionamiento, horaDeshabilitacion: null } 
+        this.filas = this.filas.map(fila =>
+          fila.id === idCochera
+            ? { ...fila, activo: { id: -1, patente, horaIngreso } as Estacionamiento, horaDeshabilitacion: null }
             : fila
         );
-        
+
         Swal.fire('Estacionamiento Abierto', `La cochera fue marcada como ocupada con la patente: ${patente}.`, 'success');
       }
     });
   }
 
-  async abrirModalCerrarEstacionamiento(idCochera: number, estacionamientoId: number) {
-    const confirmacion = await Swal.fire({
-      title: '¿Cerrar estacionamiento?',
-      text: 'Esta acción liberará la cochera y la marcará como disponible.',
-      icon: 'warning',
+  
+  async abrirModalCerrarEstacionamiento(cocheraId: number) {
+    const horaIngreso = localStorage.getItem(`cochera_${cocheraId}_horaIngreso`);
+    if (!horaIngreso) {
+      Swal.fire('Error', 'No se encontraron datos de ingreso para esta cochera.', 'error');
+      return;
+    }
+  
+    const horaIngresoDate = new Date(horaIngreso);
+    const horaSalidaDate = new Date();
+    let tiempoEstacionado = (horaSalidaDate.getTime() - horaIngresoDate.getTime()) / (1000 * 60 * 60); // en horas
+  
+    if (tiempoEstacionado < 0.5) {
+      tiempoEstacionado = 0.5; // Cobrar al menos media hora
+    }
+  
+    const tarifaPorHora = 260; // Define la tarifa por hora
+    const precioAPagar = tarifaPorHora * tiempoEstacionado;
+  
+    const pagoConfirmado = await Swal.fire({
+      title: '<strong>Precio a Pagar</strong>',
+      icon: 'info',
+      html: `
+        <div style="text-align: left; margin-top: 15px;">
+          <p><strong>Hora de ingreso:</strong> ${horaIngresoDate.toLocaleString()}</p>
+          <p><strong>Hora de salida:</strong> ${horaSalidaDate.toLocaleString()}</p>
+          <p><strong>Tiempo estacionado:</strong> ${tiempoEstacionado.toFixed(2)} horas</p>
+          <hr style="margin: 10px 0;">
+          <h3 style="color: #3085d6; font-weight: bold;">Precio: $${precioAPagar.toFixed(2)}</h3>
+        </div>
+      `,
       showCancelButton: true,
-      confirmButtonText: 'Sí, cerrar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Pagar',
+      cancelButtonText: 'Cancelar',
+      backdrop: `rgba(0,0,0,0.4)`,
     });
-
-    if (confirmacion.isConfirmed) {
-      localStorage.removeItem(`cochera_${idCochera}_patente`);
-      localStorage.removeItem(`cochera_${idCochera}_horaIngreso`);
-
-      this.filas = this.filas.map(fila => 
-        fila.id === idCochera 
-          ? { ...fila, activo: null, horaDeshabilitacion: null } 
-          : fila
+  
+    if (pagoConfirmado.isConfirmed) {
+      localStorage.removeItem(`cochera_${cocheraId}_patente`);
+      localStorage.removeItem(`cochera_${cocheraId}_horaIngreso`);
+  
+      // Actualiza el almacenamiento local con el monto cobrado
+      const cobradoAnterior = parseFloat(localStorage.getItem(`cobrado_${cocheraId}`) || '0');
+      localStorage.setItem(`cobrado_${cocheraId}`, (cobradoAnterior + precioAPagar).toFixed(2));
+  
+      const usosAnterior = parseInt(localStorage.getItem(`usos_${cocheraId}`) || '0', 10);
+      localStorage.setItem(`usos_${cocheraId}`, (usosAnterior + 1).toString());
+  
+      this.filas = this.filas.map(fila =>
+        fila.id === cocheraId ? { ...fila, activo: null, horaDeshabilitacion: null } : fila
       );
-
+  
       Swal.fire('Estacionamiento Cerrado', 'La cochera ha sido liberada y está disponible.', 'success');
     }
   }
-}
+}  

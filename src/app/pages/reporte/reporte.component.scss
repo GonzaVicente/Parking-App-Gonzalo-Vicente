@@ -1,0 +1,62 @@
+.reporte-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #f8f9fa;
+  }
+  
+  .tabla {
+    width: 100%;
+    max-width: 1200px;
+    margin: 20px auto;
+    border-collapse: separate;
+    border-spacing: 0 15px;
+    font-family: 'Roboto', sans-serif;
+    color: #333; /* Color de texto principal */
+    background-color: #f2f2f2; /* Fondo de la tabla */
+  }
+  
+  .header-tabla {
+    display: flex;
+    justify-content: space-around;
+    background-color: #333; /* Color de fondo del encabezado */
+    color: white; /* Color de texto del encabezado */
+    font-size: 1.2rem;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  
+  .header-item {
+    flex: 1;
+    text-align: center;
+    font-weight: bold;
+  }
+  
+  .table-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 15px;
+    background-color: white; /* Fondo de las filas */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .table-row:hover {
+    background-color: #f1f1f1; /* Fondo al pasar el cursor */
+  }
+  
+  .table-cell {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    font-size: 1rem;
+    color: #333; /* Color de texto de las celdas */
+  }
+  
+  .table-cell:last-child {
+    font-weight: bold;
+    color: #28a745; /* Color del monto cobrado */
+  }

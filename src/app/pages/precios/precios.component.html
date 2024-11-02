@@ -1,21 +1,21 @@
 <app-header></app-header>
+
 <main class="flex-column-center">
-    <div class="tabla">
-        <div class="header-tabla">
-            <div class="header-item">Vehiculo</div>
-            <div class="header-item">Precio</div>
-            <div class="header-item">Tiempo</div>
-            <div class="header-item">Acciones</div>
-        </div>
-        @for (fila of filas; track $index) {
-            <div class="table-row">
-                <div class="table-cell">{{ fila.id }}</div>
-                <div class="table-cell">
-                </div>
-                <div class="table-cell"></div>
-                <div class="table-cell acciones-container">
-                </div>
-            </div>
-        }
+  <div class="tabla">
+    <div class="header-tabla">
+      <div class="header-item">Tiempo</div>
+      <div class="header-item">Costo</div>
+      <div class="header-item">Acciones</div>
     </div>
+
+    <div *ngFor="let tarifa of tarifas" class="table-row">
+      <div class="table-cell">{{ tarifa.tipo }}</div>
+      <div class="table-cell">{{ tarifa.valor | currency }}</div>
+      <div class="table-cell">
+        <button (click)="editarTarifa(tarifa)" class="action-button">
+          Editar
+        </button>
+      </div>
+    </div>
+  </div>
 </main>

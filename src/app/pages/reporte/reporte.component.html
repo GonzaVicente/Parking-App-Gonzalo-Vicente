@@ -1,2 +1,19 @@
 <app-header></app-header>
-<p>Reportes</p>
+
+<main class="reporte-container">
+  <div class="tabla">
+    <div class="header-tabla">
+      <div class="header-item">N°</div>
+      <div class="header-item">Mes</div>
+      <div class="header-item">Usos</div>
+      <div class="header-item">Cobrado</div>
+    </div>
+
+    <div *ngFor="let reporte of reportes; let i = index" class="table-row">
+      <div class="table-cell">{{ i + 1 }}</div>
+      <div class="table-cell">{{ reporte.mes }}</div>
+      <div class="table-cell">{{ reporte.usos }}</div>
+      <div class="table-cell">{{ reporte.cobrado | currency }}</div>
+    </div>
+  </div>
+</main>

@@ -15,7 +15,7 @@
         <span *ngIf="!fila.deshabilitada && !fila.activo" class="disponible" (click)="abrirModalNuevoEstacionamiento(fila.id)">
           Disponible
         </span>
-        <span *ngIf="fila.activo" class="activo" (click)="abrirModalCerrarEstacionamiento(fila.id, fila.activo.id)">
+        <span *ngIf="fila.activo" class="activo" (click)="abrirModalCerrarEstacionamiento(fila.id)">
           {{ fila.activo.patente }}
         </span>
         <span *ngIf="fila.deshabilitada && !fila.activo" class="ocupado">
@@ -42,4 +42,3 @@
 
   <button (click)="agregarFila()" class="boton-resaltado" id="agregar-cochera">+</button>
 </main>
-<h5>AOSKDASODKSAD</h5>
